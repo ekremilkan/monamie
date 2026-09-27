@@ -1,0 +1,26 @@
+---
+import Layout from "@/layouts/Layout.astro";
+---
+
+<Layout title="Anmeldefehler – Mon Amie Chicken">
+  <div class="min-h-screen flex items-center justify-center bg-background">
+    <div class="text-center max-w-md mx-auto p-6">
+      <div class="mb-6">
+        <svg class="w-16 h-16 text-red-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+        </svg>
+        <h1 class="text-2xl font-bold text-foreground mb-2">Fehler bei der Anmeldung</h1>
+        <p class="text-muted mb-6">Bei der Google-Anmeldung ist ein Fehler aufgetreten.</p>
+      </div>
+      
+      <div class="space-y-4">
+        <a href="/" class="inline-flex items-center justify-center w-full px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors">
+          Zur Startseite
+        </a>
+        <a href="/" class="inline-flex items-center justify-center w-full px-4 py-2 border border-border text-foreground rounded-md hover:bg-secondary transition-colors">
+          Erneut versuchen
+        </a>
+      </div>
+    </div>
+  </div>
+</Layout>

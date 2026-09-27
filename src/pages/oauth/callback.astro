@@ -1,0 +1,8 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import OAuthCallbackPageWrapper from "@/components/OAuthCallbackPageWrapper.tsx";
+---
+
+<Layout title="Google Anmeldung – Mon Amie Chicken">
+  <OAuthCallbackPageWrapper client:only="react" />
+</Layout>

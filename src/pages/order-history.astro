@@ -1,0 +1,8 @@
+---
+import Layout from "../layouts/Layout.astro";
+import OrderHistoryPageWrapper from "@/components/OrderHistoryPageWrapper.tsx";
+---
+
+<Layout title="Order History">
+  <OrderHistoryPageWrapper client:only="react" />
+</Layout>

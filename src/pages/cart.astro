@@ -1,0 +1,8 @@
+---
+import Layout from "../layouts/Layout.astro";
+import CartPageWrapper from "@/components/CartPageWrapper.tsx";
+---
+
+<Layout title="Your Cart">
+  <CartPageWrapper client:only="react" />
+</Layout>

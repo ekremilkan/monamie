@@ -1,0 +1,281 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Category {
+  id           Int                   @id @default(autoincrement())
+  slug         String                @unique // "ana-yemekler", "tatlilar" etc.
+  createdAt    DateTime              @default(now())
+  updatedAt    DateTime              @updatedAt
+  products     Product[]
+  translations CategoryTranslation[]
+}
+
+model CategoryTranslation {
+  id         Int      @id @default(autoincrement())
+  categoryId Int
+  language   String   @default("de") // 'de', 'en', 'tr'
+  name       String // "Hauptgerichte", "Desserts"
+  category   Category @relation(fields: [categoryId], references: [id])
+
+  @@unique([categoryId, language]) // Bir kategorinin bir dilde tek çevirisi olabilir
+}
+
+model Product {
+  id           Int                  @id @default(autoincrement())
+  price        Decimal
+  imageUrl     String?
+  createdAt    DateTime             @default(now())
+  updatedAt    DateTime             @updatedAt
+  categoryId   Int
+  category     Category             @relation(fields: [categoryId], references: [id])
+  translations ProductTranslation[]
+  ingredients  ProductIngredient[]
+  orderItems   OrderItem[]
+  reviews      Review[] // Bir ürün için birden çok yorum olabilir
+}
+
+model ProductTranslation {
+  id          Int     @id @default(autoincrement())
+  productId   Int
+  language    String  @default("de") // 'de', 'en', 'tr'
+  name        String // "Adana Kebap"
+  description String // "Scharfes Hackfleisch vom Spieß..."
+  product     Product @relation(fields: [productId], references: [id])
+
+  @@unique([productId, language]) // Bir ürünün bir dilde tek çevirisi olabilir
+}
+
+model Ingredient {
+  id    Int      @id @default(autoincrement())
+  name  String   @unique
+  price Decimal? // Ekstralar için fiyat. Normal içerik için null olabilir.
+
+  // Bir malzemenin hangi ürünlerde kullanıldığını belirtir
+  products ProductIngredient[]
+}
+
+model ProductIngredient {
+  product      Product    @relation(fields: [productId], references: [id])
+  productId    Int
+  ingredient   Ingredient @relation(fields: [ingredientId], references: [id])
+  ingredientId Int
+
+  isRequired        Boolean @default(true) // 'Required' etiketini belirler
+  isDefaultSelected Boolean @default(true) // Varsayılan olarak seçili mi?
+
+  @@id([productId, ingredientId]) // İki alan birlikte birincil anahtar olur
+}
+
+// KULLANICI MODELİ
+model User {
+  id    Int     @id @default(autoincrement())
+  email String  @unique
+  name  String?
+
+  // Google gibi sosyal medya sağlayıcıları için alanlar
+  provider      String? // Örn: "google"
+  providerId    String? // Google'dan gelen benzersiz kullanıcı ID'si
+  pictureUrl    String? // Google profil fotoğrafı URL'si
+  providerData  Json? // Ek Google verileri (JSON formatında)
+  emailVerified Boolean   @default(false) // Email doğrulama durumu
+  lastLoginAt   DateTime? // Son giriş zamanı
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  cart Json?
+
+  // İlişkiler: Bir kullanıcının birden çok adresi ve siparişi olabilir.
+  addresses         Address[]
+  orders            Order[]
+  reviews           Review[] // Bir kullanıcı birden çok yorum yapabilir
+  pushSubscriptions PushSubscription[]
+  // OTP kodları ve session'lar
+  otpCodes          OtpCode[]
+  sessions          Session[]
+
+  @@index([provider, providerId])
+  @@index([emailVerified])
+}
+
+// ADRES MODELİ
+model Address {
+  id      Int     @id @default(autoincrement())
+  street  String
+  city    String
+  zipCode String
+  details String? // Apartman no, kat vb.
+
+  // İlişki: Bu adresin hangi kullanıcıya ait olduğunu belirtir.
+  userId Int
+  user   User @relation(fields: [userId], references: [id])
+}
+
+// SİPARİŞ MODELİ (Güncellenmiş Hali)
+model Order {
+  id              Int         @id @default(autoincrement())
+  createdAt       DateTime    @default(now())
+  totalPrice      Decimal
+  status          OrderStatus @default(PREPARING) // Örn: "preparing", "on_the_way", "delivered"
+  deliveredAt     DateTime? // Teslim edilme tarihi (yorum yapma için gereken)
+  orderNumber     String      @unique // Sipariş takip numarası
+  paymentMethod   String? // Ödeme yöntemi (örn: stripe, barzahlung)
+  paymentStatus   String?
+  paymentIntentId String?     @unique
+  deliveryStreet  String?
+  deliveryCity    String?
+  deliveryZipCode String?
+  deliveryDetails String?
+
+  userId Int
+  user   User @relation(fields: [userId], references: [id])
+
+  // İlişkiler: Bir siparişin içinde birden çok ürün (OrderItem) olabilir.
+  items   OrderItem[]
+  reviews Review[] // Bir siparişte birden çok yorum olabilir
+}
+
+enum OrderStatus {
+  PENDING_PAYMENT
+  PREPARING
+  ORDER_RECEIVED
+  ON_THE_WAY
+  DELIVERED
+  CANCELLED
+}
+
+// YENİ MODEL: SİPARİŞ İÇERİĞİ
+model OrderItem {
+  id              Int     @id @default(autoincrement())
+  quantity        Int
+  priceAtPurchase Decimal
+
+  // YENİ ALAN: Sipariş anında seçilen malzeme ID'lerinin bir listesini tutar.
+  // PostgreSQL'in dizi (array) yeteneğini kullanıyoruz.
+  selectedIngredientIds Int[]
+
+  orderId Int
+  order   Order @relation(fields: [orderId], references: [id])
+
+  productId Int
+  product   Product @relation(fields: [productId], references: [id])
+}
+
+// BİR ÖNCEKİ HATADAN DERS ÇIKARALIM :)
+// Product modelimize de 'Order' ile olan ilişkiyi ekleyebiliriz ama şimdilik kafamızı karıştırmayalım.
+// Önce User'ı halledelim.
+
+// OTP KOD MODELİ
+model OtpCode {
+  id        Int      @id @default(autoincrement())
+  code      String // 6 haneli OTP kodu
+  email     String // Kodun gönderildiği email adresi
+  type      String // 'login', 'register', 'password_reset'
+  expiresAt DateTime // Kodun geçerlilik süresi (2 dakika)
+  used      Boolean  @default(false) // Kod kullanıldı mı?
+  attempts  Int      @default(0) // Başarısız doğrulama denemeleri
+  createdAt DateTime @default(now())
+
+  // İlişki: Kodun hangi kullanıcıya ait olduğu (opsiyonel)
+  userId Int?
+  user   User? @relation(fields: [userId], references: [id])
+
+  @@index([email, type])
+  @@index([code, email, type])
+  @@index([expiresAt])
+  @@index([userId])
+}
+
+// SESSION MODELİ
+model Session {
+  id         String   @id @default(uuid()) // JWT token'ı için unique ID
+  userId     Int
+  user       User     @relation(fields: [userId], references: [id])
+  token      String   @unique // JWT token
+  expiresAt  DateTime // Token'ın geçerlilik süresi
+  ipAddress  String? // Kullanıcının IP adresi
+  userAgent  String? // Kullanıcının tarayıcı bilgisi
+  createdAt  DateTime @default(now())
+  lastUsedAt DateTime @default(now()) // Son kullanım zamanı
+  isActive   Boolean  @default(true) // Session aktif mi?
+
+  @@index([userId])
+  @@index([token])
+  @@index([expiresAt])
+}
+
+// RATE LIMIT MODELİ
+model RateLimit {
+  id         Int      @id @default(autoincrement())
+  key        String // Rate limiting anahtarı (IP, email vb.)
+  ip         String // IP adresi
+  userAgent  String // Kullanıcı ajanı
+  path       String // İstek yolu
+  method     String // HTTP metodu
+  statusCode Int? // Yanıt durum kodu
+  createdAt  DateTime @default(now())
+
+  @@index([key, createdAt])
+  @@index([ip, createdAt])
+}
+
+// BAŞARISIZ GİRİŞ DENEMELERİ MODELİ
+model FailedAttempt {
+  id        Int      @id @default(autoincrement())
+  email     String // Denemede kullanılan email
+  ipAddress String // IP adresi
+  userAgent String? // Kullanıcı ajanı
+  timestamp DateTime @default(now()) // Deneme zamanı
+
+  @@index([email, ipAddress])
+  @@index([timestamp])
+}
+
+// REVIEW MODELİ - Kullanıcı Yorumları
+model Review {
+  id         String    @id @default(uuid())
+  userId     Int
+  orderId    Int
+  productId  Int? // Artık nullable - sipariş bazlı yorum için
+  rating     Int?      @db.SmallInt // 1-5 arası puan - nullable
+  comment    String?   @db.VarChar(500) // Yorum metni - nullable
+  status     String    @default("pending") // pending, published, rejected
+  createdAt  DateTime  @default(now())
+  approvedAt DateTime?
+
+  // İlişkiler
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  order   Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product Product? @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  // Benzersiz kısıtlama: Bir kullanıcı bir sipariş için sadece bir yorum yapabilir
+  @@unique([userId, orderId])
+  @@index([userId])
+  @@index([orderId])
+  @@index([productId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model PushSubscription {
+  id             Int       @id @default(autoincrement())
+  endpoint       String    @unique
+  keys           Json
+  expirationTime DateTime?
+  userAgent      String?
+  platform       String?
+  locale         String?   @default("de-DE")
+  userId         Int?
+  user           User?     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@index([userId])
+}

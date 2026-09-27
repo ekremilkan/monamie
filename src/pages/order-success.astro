@@ -1,0 +1,8 @@
+---
+import Layout from "../layouts/Layout.astro";
+import OrderSuccessPageWrapper from "@/components/OrderSuccessPageWrapper.tsx";
+---
+
+<Layout title="Order Successful">
+  <OrderSuccessPageWrapper client:only="react" />
+</Layout>

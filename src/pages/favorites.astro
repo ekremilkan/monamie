@@ -1,0 +1,8 @@
+---
+import Layout from "../layouts/Layout.astro";
+import FavoritesPageWrapper from "@/components/FavoritesPageWrapper";
+---
+
+<Layout title="Favorilerim">
+  <FavoritesPageWrapper client:only="react" />
+</Layout>

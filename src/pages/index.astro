@@ -1,0 +1,8 @@
+---
+import Layout from "../layouts/Layout.astro";
+import HomePageWrapper from "@/components/HomePageWrapper";
+---
+
+<Layout title="Welcome to Mon Amie Chicken">
+  <HomePageWrapper client:only="react" />
+</Layout>

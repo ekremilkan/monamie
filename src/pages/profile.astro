@@ -1,0 +1,8 @@
+---
+import Layout from "../layouts/Layout.astro";
+import ProfilePageWrapper from "@/components/ProfilePageWrapper.tsx";
+---
+
+<Layout title="Your Profile">
+  <ProfilePageWrapper client:only="react" />
+</Layout>

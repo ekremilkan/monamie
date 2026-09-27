@@ -1,0 +1,54 @@
+---
+import "../styles/tailwind.css";
+import { ViewTransitions } from "astro:transitions";
+
+interface Props {
+  title: string;
+}
+
+const { title } = Astro.props;
+---
+
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="description" content="Leckeres Hähnchen" />
+    <meta name="viewport" content="width=device-width" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="generator" content={Astro.generator} />
+    <title>{title}</title>
+    {/* YENİ FONT LİNKLERİ */}
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="preload"
+      as="style"
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Roboto:wght@400&display=swap"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Roboto:wght@400&display=swap"
+      media="print"
+      onload="this.media='all'"
+    />
+    <noscript>
+      <link
+        rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Roboto:wght@400&display=swap"
+      />
+    </noscript>
+    <link
+      rel="preload"
+      as="image"
+      href="/images/hero-tenders.jpg"
+      imagesrcset="/images/hero-tenders.jpg 1x, /images/hero-tenders.jpg 2x"
+      fetchpriority="high"
+      type="image/jpeg"
+    />
+  </head>
+  <body>
+    {/* Artık body'nin içinde sadece slot var. Tüm layout mantığı React'te. */}
+    <slot />
+  </body>
+</html>

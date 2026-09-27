@@ -1,0 +1,21 @@
+---
+import Layout from "../layouts/Layout.astro";
+import MenuApp from "@/components/MenuApp.tsx";
+import type { Product } from "@/types";
+import { buildApiUrl } from "@/lib/api";
+
+// Sunucu tarafında ürünleri çekme mantığı buraya taşındı.
+let products: Product[] = [];
+try {
+  const response = await fetch(buildApiUrl("/api/products"));
+  if (response.ok) {
+    products = await response.json();
+  }
+} catch (error) {
+  console.error(error);
+}
+---
+
+<Layout title="Our Menu">
+  <MenuApp products={products} client:only="react" />
+</Layout>

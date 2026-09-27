@@ -1,0 +1,49 @@
+{
+  "name": "api",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "prisma": {
+    "seed": "ts-node prisma/seed.ts"
+  },
+  "scripts": {
+    "test": "node --test -r ts-node/register src/services/checkout.test.ts",
+    "dev": "node -r dotenv/config ./node_modules/nodemon/bin/nodemon.js src/index.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "packageManager": "pnpm@10.18.1",
+  "dependencies": {
+    "@types/express-rate-limit": "^6.0.2",
+    "@types/express-validator": "^3.0.2",
+    "@types/nodemailer": "^7.0.3",
+    "@types/socket.io": "^3.0.2",
+    "@types/web-push": "^3.6.4",
+    "axios": "^1.12.2",
+    "bcrypt": "^6.0.0",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "express": "^5.1.0",
+    "express-rate-limit": "^8.1.0",
+    "express-validator": "^7.3.0",
+    "jsonwebtoken": "^9.0.2",
+    "nodemailer": "^7.0.10",
+    "prisma": "^6.17.0",
+    "socket.io": "^4.8.1",
+    "stripe": "^19.1.0",
+    "web-push": "^3.6.7"
+  },
+  "devDependencies": {
+    "@prisma/client": "^6.17.0",
+    "@types/bcrypt": "^6.0.0",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.3",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/node": "^24.7.0",
+    "@types/stripe": "^8.0.417",
+    "nodemon": "^3.1.10",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3"
+  }
+}
